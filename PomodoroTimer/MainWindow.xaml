@@ -1,0 +1,64 @@
+﻿<Window x:Class="PomodoroTimer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PomodoroTimer"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        mc:Ignorable="d"
+        Title="Pomodoro Timer" Height="200" Width="200">
+    
+    <Window.Resources>
+        <!-- 定数定義部分。Keyをつけて、下で使う-->
+        <SolidColorBrush x:Key="WorkColorCode" Color="Red"/>
+        <SolidColorBrush x:Key="ReadyColorCode" Color="LightGreen"/>
+        <SolidColorBrush x:Key="RestColorCode" Color="Orange"/>
+    </Window.Resources>
+    
+    <Grid>
+        <Grid.ColumnDefinitions>
+        </Grid.ColumnDefinitions>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <!--ボタン-->
+        <StackPanel Grid.Row="0" 
+                    Orientation="Horizontal" 
+                    HorizontalAlignment="Center">
+            <Button x:Name="buttonStartStop" 
+                    Click="ButtonStartStop_Click" 
+                    Height="30" 
+                    Width="60" 
+                    Margin="10" 
+                    Content="Start"/>
+
+            <Button x:Name="buttonReset" 
+                    Click="ButtonReset_Click" 
+                    Height="30" 
+                    Width="60" 
+                    Margin="10" 
+                    Content="Reset"/>
+        </StackPanel>
+
+        <!--残り時間表示-->
+        <TextBlock x:Name="timerTextBlock" 
+                   Grid.Row="1" 
+                   FontSize="50" 
+                   HorizontalAlignment="Center" 
+                   VerticalAlignment="Center">25:00
+        </TextBlock>
+        <!--状態表示 赤ランプが作業中、緑ランプが停止中・休憩中-->
+        <Ellipse x:Name="stateLamp" 
+                 Fill="{StaticResource ReadyColorCode}" 
+                 Stroke="Black" 
+                 Margin="4,4,158,50.5" 
+                 Height="15"
+                 Width="15"
+                 RenderTransformOrigin="-10.343,0.674" 
+                 Grid.Row="1"/>
+    </Grid>
+</Window>
