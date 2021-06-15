@@ -23,8 +23,7 @@ namespace PomodoroTimer
     public partial class MainWindow : Window
     {
         private readonly Stopwatch stopwatch = new Stopwatch();
-        // private int countMax = 25 * 60;
-        private int countMax = 6;
+        private int countMax = 25 * 60;
         private string statement = "Ready";
         private bool isStarting = false;
 
@@ -60,10 +59,10 @@ namespace PomodoroTimer
                 // ストップウォッチを停止
                 stopwatch.Stop();
                 stopwatch.Reset();
-                timer.Stop();
                 // 状態ランプを変更
                 ChangeStateLampToNext();
                 TryGetCountMaxTime(out countMax);
+                timer.Stop();
             }
         }
 
@@ -72,17 +71,17 @@ namespace PomodoroTimer
         private void TryGetCountMaxTime(out int countMax)
         {
             // 状態ランプがオレンジ(休憩中)の場合、計測時間を5分とする
-            if (stateLamp.Fill == Brushes.Orange && statement == "ReadyRest")
+            if (statement == "ReadyRest")
             {
                 // debugのため時間短縮
-                // countMax = 5 * 60;
-                countMax = 5;
+                countMax = 5 * 60;
+                // countMax = 5;
             }
             else
             {
                 // debugのため時間短縮
-                // countMax = 25 * 60;
-                countMax = 3;
+                countMax = 25 * 60;
+                // countMax = 3;
             }
         }
 
@@ -95,20 +94,19 @@ namespace PomodoroTimer
         // 残り時間に応じて、状態ランプを変更
         private void ChangeStateLampToNext ()
         {
-            // 作業終了時
-            if (stateLamp.Fill == Brushes.Red && statement == "Finish")
+            if (statement == "Finish")
             {
-                stateLamp.Fill = Brushes.Orange;
-                statement = "ReadyRest";
-                buttonStartStop.Content = "Start";
-                isStarting = false;
-            }
+                if (stateLamp.Fill == Brushes.Orange)
+                {
+                    statement = "Ready";
+                    stateLamp.Fill = Brushes.LightGreen;
+                }
+                else if (stateLamp.Fill == Brushes.Red)
+                {
+                    statement = "ReadyRest";
+                    stateLamp.Fill = Brushes.Orange;
+                }
 
-            // 休憩終了時
-            else if (stateLamp.Fill == Brushes.Orange && statement == "Finish")
-            {
-                stateLamp.Fill = Brushes.LightGreen;
-                statement = "Ready";
                 buttonStartStop.Content = "Start";
                 isStarting = false;
             }
@@ -166,7 +164,8 @@ namespace PomodoroTimer
         // 状態ランプを緑から赤に変更
         private void ChangeStateLampToRed()
         {
-            if (stateLamp.Fill == Brushes.LightGreen)
+            //if (stateLamp.Fill == Brushes.LightGreen)
+            if (statement == "Working")
             {
                 stateLamp.Fill = Brushes.Red;
             }
@@ -180,7 +179,9 @@ namespace PomodoroTimer
             statement = "Ready";
             stopwatch.Reset();
             stateLamp.Fill = Brushes.LightGreen;
+            buttonStartStop.Content = "Start";
             timer.Start();
+            isStarting = false;
         }
     }
 }

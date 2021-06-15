@@ -5,8 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PomodoroTimer"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        Topmost="true"
         mc:Ignorable="d"
-        Title="Pomodoro Timer" Height="200" Width="200">
+        Title="Pomodoro Timer" Height="170" Width="200">
     
     <Window.Resources>
         <!-- 定数定義部分。Keyをつけて、下で使う-->
