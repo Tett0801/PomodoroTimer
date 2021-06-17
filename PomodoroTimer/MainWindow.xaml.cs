@@ -53,7 +53,7 @@ namespace PomodoroTimer
             }
 
             // タイマーが0秒になった場合
-            if (restSecond == 0)
+            if (restSecond < 0)
             {
                 statement = "Finish";
                 // ストップウォッチを停止
@@ -62,7 +62,6 @@ namespace PomodoroTimer
                 // 状態ランプを変更
                 ChangeStateLampToNext();
                 TryGetCountMaxTime(out countMax);
-                timer.Stop();
             }
         }
 
@@ -75,7 +74,7 @@ namespace PomodoroTimer
             {
                 // debugのため時間短縮
                 countMax = 5 * 60;
-                // countMax = 5;
+                // countMax = 10;
             }
             else
             {
@@ -119,13 +118,13 @@ namespace PomodoroTimer
             {
                 stopwatch.Stop();
                 ChangeTextToStart();
-                // タイマーをストップ
-                timer.Stop();
                 isStarting = false;
             }
 
             else
             {
+                TryGetCountMaxTime(out countMax);
+
                 if (statement == "Ready")
                 {
                     statement = "Working";
@@ -180,7 +179,7 @@ namespace PomodoroTimer
             stopwatch.Reset();
             stateLamp.Fill = Brushes.LightGreen;
             buttonStartStop.Content = "Start";
-            timer.Start();
+            TryGetCountMaxTime(out countMax);
             isStarting = false;
         }
     }
