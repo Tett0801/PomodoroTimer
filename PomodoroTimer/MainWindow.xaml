@@ -53,7 +53,7 @@
                    VerticalAlignment="Center">25:00
         </TextBlock>
         <!--状態表示 赤ランプが作業中、緑ランプが停止中・休憩中-->
-        <Ellipse x:Name="stateLamp" 
+        <Ellipse x:Name="statementLamp" 
                  Fill="{StaticResource ReadyColorCode}" 
                  Stroke="Black" 
                  Margin="4,4,158,50.5" 

@@ -22,151 +22,189 @@ namespace PomodoroTimer
     /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly Stopwatch stopwatch = new Stopwatch();
-        private int countMax = 25 * 60;
-        private string statement = "Ready";
-        private bool isStarting = false;
+        // フィールド
 
+        // 状態変数を定義
+        private Statement _statement;
+        // 状態ランプカラーを定義
+        private StatementLampColor _statementLampColor;
+        // タイマー動作中か否かの判定フラッグ
+        private bool isStarting = false;
+        // タイマーの最大時間
+        private int _maxTime = 25 * 60;
+        // 休憩時間
+        private readonly int _restTime = 5;
+        // private readonly int restTime = 5 * 60;
+        // 作業時間
+        private readonly int _workTime = 10;
+        // private readonly int workTime = 25 * 60;
+        // ストップウォッチインスタンスを生成
+        private readonly Stopwatch stopwatch = new Stopwatch();
         // 指定した感覚ごとに定期的に実行するタイマー
         public DispatcherTimer timer = new DispatcherTimer();
-        
 
+        // コンストラクタ―
         public MainWindow()
         {
             InitializeComponent();
         }
 
-        // 指定した間隔ごとに処理を実行
-        private void Timer_Tick(object sender, EventArgs e)
-        {
-            var totalSeconds = ((int)this.stopwatch.Elapsed.TotalSeconds);
-            
-            RestSecond(totalSeconds, out int restSecond);
+        // メソッド
 
-            // 周期を設定
-            TimeSpan countTime = new TimeSpan(0, 0, (restSecond));
+        // 指定した間隔ごとに処理を実行
+        private void DoPerCycleTime(object sender, EventArgs e)
+        {
+            // ストップウォッチがスタートしてからの経過時間を取得
+            var elapsedTime = ((int)this.stopwatch.Elapsed.TotalSeconds);
+            
+            // タイマーの残り時間を取得
+            GetRemainTime(_maxTime, elapsedTime, out int remainTime);
+
+            // 残り時間を画面に表示するために
+            // タイマーの残り時間からTimeSpanオブジェクトを生成
+            TimeSpan remainTimeObject = new TimeSpan(0, 0, (remainTime));
 
             // 残り時間を画面に表示
-            if (restSecond >= 0)
+            if (remainTime >= 0)
             {
-                timerTextBlock.Text = countTime.ToString(@"mm\:ss");
+                timerTextBlock.Text = remainTimeObject.ToString(@"mm\:ss");
             }
 
             // タイマーが0秒になった場合
-            if (restSecond < 0)
+            if (remainTime < 0)
             {
-                statement = "Finish";
-                // ストップウォッチを停止
+                // 状態を"Finish"にする
+                _statement = Statement.Finish;
+                // ストップウォッチを停止する
                 stopwatch.Stop();
+                // ストップウォッチをリセットする
                 stopwatch.Reset();
-                // 状態ランプを変更
+                // 状態表示ランプを変更する
                 ChangeStateLampToNext();
-                TryGetCountMaxTime(out countMax);
+                // 状態に応じた最大時間を取得する
+                TryGetMaxTime(_statement, out _maxTime);
             }
         }
 
         // 計測時間の最大値を取得
-        // Try get the max value to measure
-        private void TryGetCountMaxTime(out int countMax)
+        private void TryGetMaxTime(Statement statement, out int maxTime)
         {
             // 状態ランプがオレンジ(休憩中)の場合、計測時間を5分とする
-            if (statement == "ReadyRest")
+            switch(statement)
             {
-                // debugのため時間短縮
-                countMax = 5 * 60;
-                // countMax = 10;
-            }
-            else
-            {
-                // debugのため時間短縮
-                countMax = 25 * 60;
-                // countMax = 3;
+                case Statement.ReadyRest:
+                    maxTime = _restTime;
+                    break;
+                default:
+                    maxTime = _workTime;
+                    break;
             }
         }
 
-        // 残り時間を取得
-        private void RestSecond(int totalSeconds, out int restSecond)
+        // タイマーの残り時間を取得する
+        private void GetRemainTime(int maxTime, int elapsedTime, out int remainTime)
         {
-            restSecond = countMax - totalSeconds;
+            remainTime = maxTime - elapsedTime;
         }
 
-        // 残り時間に応じて、状態ランプを変更
-        private void ChangeStateLampToNext ()
+        // 残り時間に応じて状態ランプを変更する
+        private void ChangeStateLampToNext()
         {
-            if (statement == "Finish")
+            // 状態が"Finish"の場合
+            if (_statement == Statement.Finish)
             {
-                if (stateLamp.Fill == Brushes.Orange)
-                {
-                    statement = "Ready";
-                    stateLamp.Fill = Brushes.LightGreen;
-                }
-                else if (stateLamp.Fill == Brushes.Red)
-                {
-                    statement = "ReadyRest";
-                    stateLamp.Fill = Brushes.Orange;
-                }
-
-                buttonStartStop.Content = "Start";
+                // フラッグを停止中に変更する
                 isStarting = false;
+                // ボタンの表示テキストを"Start"に変更する
+                buttonStartStop.Content = StartStopButtonText.Start;
+
+                // 状態ランプの色に応じて
+                // 状態と状態ランプの色を変更する
+                switch(_statementLampColor)
+                {
+                    // 状態ランプの色がオレンジの場合
+                    case StatementLampColor.Orange:
+                        _statement = Statement.Ready;
+                        _statementLampColor = StatementLampColor.LightGreen;
+                        statementLamp.Fill = Brushes.LightGreen;
+                        break;
+                    // 状態ランプの色が赤色の場合
+                    case StatementLampColor.Red:
+                        _statement = Statement.ReadyRest;
+                        _statementLampColor = StatementLampColor.Orange;
+                        statementLamp.Fill = Brushes.Orange;
+                        break;
+                }
+            }
+        }
+
+        // ボタンの表示テキストを"Start"に変更する
+        private void ChangeTextToStart()
+        {
+            buttonStartStop.Content = StartStopButtonText.Start;
+        }
+
+        // ボタンの表示テキストをStopに変更する
+        private void ChangeTextToStop()
+        {
+            buttonStartStop.Content = StartStopButtonText.Stop;
+        }
+
+        // 状態ランプの色を緑から赤に変更する
+        private void ChangeStateLampToRed()
+        {
+            if (_statement == Statement.Working)
+            {
+                _statementLampColor = StatementLampColor.Red;
+                statementLamp.Fill = Brushes.Red;
             }
         }
 
         // Start, Stopボタンクリックによる動作/テキスト変更
         private void ButtonStartStop_Click(object sender, RoutedEventArgs e)
         {
+            // タイマーが動作中の場合
             if (isStarting)
             {
+                // ストップウォッチを停止する
                 stopwatch.Stop();
+                // ボタンのテキストを"Start"に変更する
                 ChangeTextToStart();
+                // フラッグを停止中にする
                 isStarting = false;
             }
 
+            // タイマーが停止中の場合
             else
             {
-                TryGetCountMaxTime(out countMax);
+                // 最大時間を取得する
+                TryGetMaxTime(_statement, out _maxTime);
 
-                if (statement == "Ready")
+                // 現在の状態に応じて、状態を変更する
+                switch (_statement)
                 {
-                    statement = "Working";
+                    case Statement.Ready:
+                        _statement = Statement.Working;
+                        break;
+                    case Statement.ReadyRest:
+                        _statement = Statement.Resting;
+                        break;
                 }
-                else if (statement == "ReadyRest")
-                {
-                    statement = "Resting";
-                }
-                
-                ChangeStateLampToRed(); 
+
+                // 状態ランプの色を赤色に変更する
+                ChangeStateLampToRed();
+                // ストップウォッチをスタートする
                 stopwatch.Start();
+                // ボタンの表示を"Stop"に変更する
                 ChangeTextToStop();
-
-                // 間隔を1sごとに設定
+                // タイマーの実行周期を1秒とする
                 timer.Interval = new TimeSpan(0, 0, 1);
-                // TryGetCountMaxTime(out countMax);
-                timer.Tick += Timer_Tick;
-                // タイマーをスタート
+                // タイマーの実行周期が経過した際に実行する動作を設定する
+                timer.Tick += DoPerCycleTime;
+                // タイマーをスタートする
                 timer.Start();
+                // フラッグを開始中にする
                 isStarting = true;
-            }
-        }
-
-        // ボタンテキストをStartに変更
-        private void ChangeTextToStart()
-        {
-            buttonStartStop.Content = "Start";
-        }
-
-        // ボタンテキストをStopに変更
-        private void ChangeTextToStop()
-        {
-            buttonStartStop.Content = "Stop";
-        }
-
-        // 状態ランプを緑から赤に変更
-        private void ChangeStateLampToRed()
-        {
-            //if (stateLamp.Fill == Brushes.LightGreen)
-            if (statement == "Working")
-            {
-                stateLamp.Fill = Brushes.Red;
             }
         }
 
@@ -175,12 +213,44 @@ namespace PomodoroTimer
         // 緑の状態ランプを点灯させる
         private void ButtonReset_Click(object sender, RoutedEventArgs e)
         {
-            statement = "Ready";
+            // 状態を"Ready"に変更する
+            _statement = Statement.Ready;
+            // ストップウォッチをリセットする
             stopwatch.Reset();
-            stateLamp.Fill = Brushes.LightGreen;
-            buttonStartStop.Content = "Start";
-            TryGetCountMaxTime(out countMax);
+            // 状態ランプの色を緑色に変更する
+            _statementLampColor = StatementLampColor.LightGreen;
+            statementLamp.Fill = Brushes.LightGreen;
+            // ボタンの表示テキストを"Start"に変更する
+            buttonStartStop.Content = StartStopButtonText.Start;
+            // タイマーの最大時間を取得する
+            TryGetMaxTime(_statement, out _maxTime);
+            // フラッグを停止中に変更する
             isStarting = false;
+        }
+
+        // 状態の列挙
+        private enum Statement
+        {
+            Ready,
+            ReadyRest,
+            Resting,
+            Working,
+            Finish,
+        }
+
+        // 状態ランプの色を列挙
+        private enum StatementLampColor
+        {
+            LightGreen,
+            Red,
+            Orange,
+        }
+
+        // buttonStartStopの表示テキストを列挙
+        private enum StartStopButtonText
+        {
+            Start,
+            Stop,
         }
     }
 }
